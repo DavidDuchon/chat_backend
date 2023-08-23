@@ -13,6 +13,7 @@ namespace chat_backend.Controllers;
 public class GroupController: ControllerBase {
     private readonly DatabaseContext _context;
     private readonly ILogger<GroupController> _logger;
+
     public GroupController(DatabaseContext context,ILogger<GroupController> logger){
         _context = context;
         _logger = logger;
@@ -55,7 +56,6 @@ public class GroupController: ControllerBase {
         newGroup.UserGroups.Add(newUserGroup);
         alreadyRegisteredUser.UserGroups.Add(newUserGroup); 
 
-        _logger.LogInformation("Length of UserGroups collection: {}",alreadyRegisteredUser.UserGroups.Count);
         await _context.Groups.AddAsync(newGroup);
         
         try {

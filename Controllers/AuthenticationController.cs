@@ -95,7 +95,6 @@ public class AuthenticationController: ControllerBase {
     [Authorize(AuthenticationSchemes="refresh",Policy ="RefreshToken")]
     public IActionResult Refresh(){
         try{
-
             var refreshToken = HttpContext.Request.Cookies["refresh"];
 
             var refTokenPayload = _jwtService.GetPayloadFromToken<RefreshTokenPayload>(refreshToken!);

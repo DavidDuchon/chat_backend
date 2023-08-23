@@ -1,2 +1,0 @@
--- SQLite
-Delete * From UserGroup;
