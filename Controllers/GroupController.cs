@@ -87,8 +87,11 @@ public class GroupController: ControllerBase {
 
         var userGroups = _context.Entry(alreadyRegisteredUser).Collection(user => user.UserGroups).Query().Where(ug => ug.Group.Name == Group.GroupName).ToList();
 
-        if (userGroups is null || userGroups.Count != 0)
+        if (userGroups is null)
             return BadRequest();
+        
+        if (userGroups.Count != 0)
+            return Ok();
 
         _logger.LogInformation("Length of UserGroups collection: {length}",alreadyRegisteredUser.UserGroups.Count);
         UserGroup newUserGroup = new UserGroup {
@@ -107,6 +110,47 @@ public class GroupController: ControllerBase {
 
         return Accepted( new {group = Group.GroupName});
 
+    }
+
+    [HttpPost]
+    [Route("myGroups")]
+    [Authorize(AuthenticationSchemes="default",Policy = "AccessToken")]
+    public ActionResult<IEnumerable<GroupModel>> GetMyGroups(){
+
+        var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+        var username = identity!.FindFirst("User")!.Value;
+
+        var alreadyRegisteredUser = _context.Users.SingleOrDefault(u => u.Username == username);
+
+        if (alreadyRegisteredUser is null)
+            return BadRequest(new {error = "Invalid user"});
+
+        var groups = _context.Entry(alreadyRegisteredUser).Collection(u => u.UserGroups).Query().Select(userGroup => userGroup.Group).Select(group => new GroupModel{GroupName = group.Name}).ToList();
+
+        return groups;
+    }
+
+    
+    [HttpPost]
+    [Route("groups")]
+    [Authorize(AuthenticationSchemes="default",Policy = "AccessToken")]
+    public ActionResult<IEnumerable<GroupModel>> GetGroups(){
+
+        var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+        var username = identity!.FindFirst("User")!.Value;
+
+        var alreadyRegisteredUser = _context.Users.SingleOrDefault(u => u.Username == username);
+
+        if (alreadyRegisteredUser is null)
+            return BadRequest(new {error = "Invalid user"});
+
+        var userGroups = _context.Entry(alreadyRegisteredUser).Collection(u => u.UserGroups).Query().Select(userGroup => userGroup.Group).Select(group => new GroupModel{GroupName = group.Name}).ToList();
+
+        var groups = _context.Groups.Where(group => !userGroups.Contains(new GroupModel{GroupName = group.Name})).Select(group => new GroupModel {GroupName = group.Name}).ToList();
+
+        return groups;
     }
 
 }
