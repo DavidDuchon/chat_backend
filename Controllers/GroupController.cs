@@ -108,7 +108,7 @@ public class GroupController: ControllerBase {
             return BadRequest(new {error = "Cannot add User to group"});
         }
 
-        return Accepted( new {group = Group.GroupName});
+        return Accepted();
 
     }
 
@@ -146,9 +146,9 @@ public class GroupController: ControllerBase {
         if (alreadyRegisteredUser is null)
             return BadRequest(new {error = "Invalid user"});
 
-        var userGroups = _context.Entry(alreadyRegisteredUser).Collection(u => u.UserGroups).Query().Select(userGroup => userGroup.Group).Select(group => new GroupModel{GroupName = group.Name}).ToList();
+        var userGroups = _context.Entry(alreadyRegisteredUser).Collection(u => u.UserGroups).Query().Select(userGroup => userGroup.Group.Name).ToList();
 
-        var groups = _context.Groups.Where(group => !userGroups.Contains(new GroupModel{GroupName = group.Name})).Select(group => new GroupModel {GroupName = group.Name}).ToList();
+        var groups = _context.Groups.Where(group => !userGroups.Contains(group.Name)).Select(group => new GroupModel {GroupName = group.Name}).ToList();
 
         return groups;
     }
