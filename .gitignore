@@ -2,3 +2,6 @@
 bin/
 obj/
 .vscode/
+Data/database.db-shm
+Data/database.db-wal
+chat_backend.sln
