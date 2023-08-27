@@ -1,20 +1,30 @@
 using Microsoft.AspNetCore.SignalR;
-
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using chat_backend.Data;
 
 namespace chat_backend.Hubs;
 
 public class ChatHub : Hub<IClient> {
     
-  public async Task SendMessage(string user,string group,string message){
+  //[Authorize(AuthenticationSchemes="signalr",Policy="AccessToken")]
+  public async Task SendMessage(string group,string message){
+      //var identity = Context.User.Identity as ClaimsIdentity;
+
+      //var user = identity!.FindFirst("User")!.Value;
+      var user = "lambada";
       await Clients.Group(group).RecieveMessage(user,message);
   }
 
-  public async Task AddToGroup(string user,string group,DatabaseContext _context){
-    var alreadyRegisteredUser = _context.Users.SingleOrDefault(usr => usr.Username == user);
+  //[Authorize(AuthenticationSchemes="signalr",Policy="AccessToken")]
+  public async Task AddToGroup(string group/*,DatabaseContext _context*/){
+   // var identity = Context.User.Identity as ClaimsIdentity;
 
-    if (alreadyRegisteredUser is null)
-      return;
+   // var user = identity!.FindFirst("User")!.Value;
+   // var alreadyRegisteredUser = _context.Users.SingleOrDefault(usr => usr.Username == user);
+
+   // if (alreadyRegisteredUser is null)
+   //   return;
 
     await Groups.AddToGroupAsync(Context.ConnectionId,group);
   }

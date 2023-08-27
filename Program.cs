@@ -55,6 +55,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
     ).AddJwtBearer("default",options => {
         options.TokenValidationParameters = tokenValidationParameters;
+    }).AddJwtBearer("signalr",options => {
+        options.Events = new JwtBearerEvents{
+            OnMessageReceived = (MessageReceivedContext context) => {
+                if (context.HttpContext.Request.Query.ContainsKey("access_token"))
+                    context.Token = context.HttpContext.Request.Query["access_token"];
+                else
+                    context.Token = "failed";
+                
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization(options =>
