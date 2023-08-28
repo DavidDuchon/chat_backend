@@ -25,7 +25,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSignalR();
 builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.Configure<JWTOptions>(builder.Configuration.GetSection("JWT"));
 
@@ -56,12 +55,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     ).AddJwtBearer("default",options => {
         options.TokenValidationParameters = tokenValidationParameters;
     }).AddJwtBearer("signalr",options => {
+        options.TokenValidationParameters = tokenValidationParameters;
         options.Events = new JwtBearerEvents{
             OnMessageReceived = (MessageReceivedContext context) => {
-                if (context.HttpContext.Request.Query.ContainsKey("access_token"))
-                    context.Token = context.HttpContext.Request.Query["access_token"];
-                else
-                    context.Token = "failed";
+                context.Token = context.HttpContext.Request.Query["access_token"];
                 
                 return Task.CompletedTask;
             }
@@ -73,6 +70,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AccessToken",policy => policy.RequireClaim("User"));
     options.AddPolicy("RefreshToken",policy => policy.RequireClaim("For"));
 });
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -90,6 +89,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<ChatHub>("chat");
+app.MapHub<ChatHub>("/chat");
 
 app.Run();
